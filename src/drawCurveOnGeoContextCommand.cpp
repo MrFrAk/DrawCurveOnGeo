@@ -49,7 +49,7 @@ MStatus DrawCurveOnGeoContextCommand::doEditFlags()
   {
     unsigned int iValue;
     argData.getFlagArgument(kRebuildValueFlag, 0, iValue);
-    m_context->m_rebuildValue(iValue);
+    m_context->setRebuildValue(iValue);
   }
 
   return MStatus::kSuccess;

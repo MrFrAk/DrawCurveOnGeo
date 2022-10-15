@@ -4,8 +4,7 @@
 // Author: Francois Coulon
 //
 
-/* Tool Command is used here to be able to undo and redo the nurbs curve
-creation.
+/* Tool Command is used to undo and redo the nurbs curve creation.
 To rebuild the curve, we get the rebuildMode and rebuildValue user data from
 the contextCommand via context.onRelease() function where this tool command is
 created and used.
@@ -37,7 +36,7 @@ namespace LivingPuppet
 
     MStatus doIt(const MArgList& args) override { return redoIt(); };
     MStatus redoIt() override;
-    MStatus undoIt() override { return MGlobal::deleteNode(m_thisDagPath.transform()); }
+    MStatus undoIt() override;
     bool isUndoable() const override { return true; }
     MStatus finalize() override;
 
@@ -47,8 +46,9 @@ namespace LivingPuppet
 
   private:
     MPointArray m_eps;
-    unsigned int m_rebuildValue{4};
     short m_rebuildMode{0};
+    unsigned int m_rebuildValue{4};
+
     MDagPath m_thisDagPath;
   };
 

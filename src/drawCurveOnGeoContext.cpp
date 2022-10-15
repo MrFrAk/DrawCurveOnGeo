@@ -97,15 +97,16 @@ MStatus DrawCurveOnGeoContext::doRelease(MEvent& event)
   // We need at least 2 points to have hit the target to create a curve
   if (editPoints.length() > 1)
   {
-    // MFnNurbsCurve fnCurve;
-    // fnCurve.createWithEditPoints(editPoints, 3, MFnNurbsCurve::kOpen, false, false, true);
-    // m_3dView.refresh();
-    drawCurveOnGeoToolCmd* cmd = (DrawCurveOnGeoToolCommand*)newToolCommand();
+    std::cout << "// DEBUG: DrawCurveOnGeoContext - m_rebuildMode: " << m_rebuildMode;
+    std::cout << "\n// DEBUG: DrawCurveOnGeoContext - m_rebuildValue: " << m_rebuildValue << std::endl;
+
+    DrawCurveOnGeoToolCommand* cmd = (DrawCurveOnGeoToolCommand*)newToolCommand();
     cmd->setEPs(editPoints);
     cmd->setRebuildMode(m_rebuildMode);
     cmd->setRebuildValue(m_rebuildValue);
     cmd->redoIt();
     cmd->finalize();
+    m_3dView.refresh();
   }
   m_2dPoints.clear();
   return MStatus::kSuccess;
