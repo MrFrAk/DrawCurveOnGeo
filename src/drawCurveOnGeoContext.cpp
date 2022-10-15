@@ -4,14 +4,15 @@
 // Author: Francois Coulon
 //
 
+#include "drawCurveOnGeoContext.h"
+#include "drawCurveOnGeoToolCommand.h"
+
 #include <maya/MCursor.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFnNurbsCurve.h>
 #include <maya/MGlobal.h>
 #include <maya/MItSelectionList.h>
 #include <maya/MSelectionList.h>
-
-#include "drawCurveOnGeoContext.h"
 
 using namespace LivingPuppet;
 
@@ -46,7 +47,6 @@ MStatus DrawCurveOnGeoContext::doPress(MEvent& event)
   short x;
   short y;
   event.getPosition(x, y);
-  m_2dPoints.clear();
   m_2dPoints.append(MPoint(static_cast<double>(x), static_cast<double>(y), 0.0));
 
   return MStatus::kSuccess;
@@ -68,6 +68,7 @@ MStatus DrawCurveOnGeoContext::doDrag(MEvent& event)
 
   return MStatus::kSuccess;
 }
+
 
 // Viewport 2.0
 MStatus DrawCurveOnGeoContext::doDrag(MEvent& event,
@@ -96,10 +97,17 @@ MStatus DrawCurveOnGeoContext::doRelease(MEvent& event)
   // We need at least 2 points to have hit the target to create a curve
   if (editPoints.length() > 1)
   {
-    MFnNurbsCurve fnCurve;
-    fnCurve.createWithEditPoints(editPoints, 3, MFnNurbsCurve::kOpen, false, false, true);
+    // MFnNurbsCurve fnCurve;
+    // fnCurve.createWithEditPoints(editPoints, 3, MFnNurbsCurve::kOpen, false, false, true);
     // m_3dView.refresh();
+    drawCurveOnGeoToolCmd* cmd = (DrawCurveOnGeoToolCommand*)newToolCommand();
+    cmd->setEPs(editPoints);
+    cmd->setRebuildMode(m_rebuildMode);
+    cmd->setRebuildValue(m_rebuildValue);
+    cmd->redoIt();
+    cmd->finalize();
   }
+  m_2dPoints.clear();
   return MStatus::kSuccess;
 }
 
@@ -108,11 +116,6 @@ MStatus DrawCurveOnGeoContext::doRelease(MEvent& event)
 
 void DrawCurveOnGeoContext::reset()
 {
-  m_viewportX = 0;
-  m_viewportY = 0;
-  m_viewportWidth = 0;
-  m_viewportHeight = 0;
-
   m_2dPoints.clear();
   m_targetDagPath = MDagPath();
 }

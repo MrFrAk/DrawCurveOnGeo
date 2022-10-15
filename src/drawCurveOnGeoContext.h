@@ -9,6 +9,9 @@ mesh. For more implementation explanations, it is based on the Maya devkit
 lassoTool example.
 */
 
+#ifndef _LP_DRAWCURVEONGEO_CONTEXT_H_
+#define _LP_DRAWCURVEONGEO_CONTEXT_H_
+
 #include <maya/MPxContext.h>
 
 #include <maya/M3dView.h>
@@ -43,6 +46,9 @@ namespace LivingPuppet
                       MHWRender::MUIDrawManager& drawManager,
                       const MHWRender::MFrameContext& context) override { return doRelease(event); }
 
+    void setRebuildMode(short rebuildMode) { m_rebuildMode = rebuildMode; }
+    void setRebuildValue(unsigned int rebuildValue) { m_rebuildValue = rebuildValue; }
+
   private:
     void reset();
 
@@ -61,6 +67,11 @@ namespace LivingPuppet
     // takes that as an input so we don't have to cast an entire array there
     MPointArray m_2dPoints;
     MDagPath m_targetDagPath;
+
+    unsigned int m_rebuildValue{4};
+    short m_rebuildMode{0};
   };
 
 } // namespace LivingPuppet
+
+#endif
