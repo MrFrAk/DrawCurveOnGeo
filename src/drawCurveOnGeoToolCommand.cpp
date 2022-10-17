@@ -6,6 +6,7 @@
 
 #include "drawCurveOnGeoToolCommand.h"
 
+#include <maya/MDoubleArray.h>
 #include <maya/MFnNurbsCurve.h>
 
 using namespace LivingPuppet;
@@ -30,18 +31,18 @@ MStatus DrawCurveOnGeoToolCommand::redoIt()
       knots.append(knot);
 
   MFnNurbsCurve fnCurve;
-  fnCurve.createWithEditPoints(m_eps, 3, MFnNurbsCurve::kOpen, false, false, true);
+  MObject curveDag = fnCurve.createWithEditPoints(m_eps, 3, MFnNurbsCurve::kOpen, false, false, true);
 
   switch(m_rebuildMode)
   {
     case 1: // to a fixed number of CVs
-      fnCurve.rebuild((m_rebuildValue - 3)); // 3: degree of curve
+      rebuildCurveInPlace(fnCurve, curveDag, (m_rebuildValue - 3)); // 3: curve's degree
       break;
     case 2: // to a fraction of the number of CVs
       {
         unsigned int numberOfCVs = static_cast<unsigned int>(fnCurve.numCVs()) / m_rebuildValue;
         unsigned int numberOfSpans = (numberOfCVs > 4)? (numberOfCVs - 3): 1;
-        fnCurve.rebuild(numberOfSpans);
+        rebuildCurveInPlace(fnCurve, curveDag, numberOfSpans);
       }
       break;
     default:
@@ -52,11 +53,28 @@ MStatus DrawCurveOnGeoToolCommand::redoIt()
 
 
 MStatus DrawCurveOnGeoToolCommand::finalize()
-// Command is finished, construct a string for the command for journaling.
+// Command is finished, construct a string for journaling.
 {
   MArgList command;
   command.addArg(MString("Created a degree 3 nurbs curve with "));
   command.addArg(MFnNurbsCurve(m_thisDagPath).numCVs());
   command.addArg(MString(" cvs.");
   return MPxToolCommand::doFinalize(command);
+}
+
+
+void DrawCurveOnGeoToolCommand::rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
+                                                    MObject& curveDag,
+                                                    unsigned int spans)
+{
+  MObject curveRebuiltData = fnCurve.rebuild(spans); // 3: degree of curve
+
+  MFnNurbsCurve fnCurveRebuilt(curveRebuiltData);
+  MPointArray cvsRebuilt;
+  fnCurveRebuilt.getCVs(cvsRebuilt);
+  MDoubleArray knotsRebuilt;
+  fnCurveRebuilt.getKnots(knotsRebuilt);
+  MObject curveRebuiltShape = fnCurve.create(cvsRebuilt, knotsRebuilt, 3,
+                                             MFnNurbsCurve::kOpen, false, true,
+                                             curveDag);
 }
