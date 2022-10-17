@@ -68,8 +68,8 @@ namespace LivingPuppet
     MPointArray m_2dPoints;
     MDagPath m_targetDagPath;
 
-    unsigned int m_rebuildValue{4};
     short m_rebuildMode{0};
+    unsigned int m_rebuildValue{4};
   };
 
 } // namespace LivingPuppet

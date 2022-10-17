@@ -12,6 +12,7 @@ maya_version = run_command(printenv, 'MAYA_VERSION_MAJOR').stdout().strip()
 shared_module('drawCurveOnGeo',
               'src/drawCurveOnGeoContext.cpp',
               'src/drawCurveOnGeoContextCommand.cpp',
+              'src/drawCurveOnGeoToolCommand.cpp',
               'src/pluginMain.cpp',
               name_prefix: '',
               include_directories: 'src',
