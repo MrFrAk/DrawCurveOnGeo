@@ -7,7 +7,11 @@
 #include "drawCurveOnGeoToolCommand.h"
 
 #include <maya/MDoubleArray.h>
+#include <maya/MString.h>
+
+#include <maya/MFnDependencyNode.h>
 #include <maya/MFnNurbsCurve.h>
+
 
 using namespace LivingPuppet;
 
@@ -22,10 +26,8 @@ MStatus DrawCurveOnGeoToolCommand::redoIt()
 //  This method creates the curve from the edit points
 {
   MFnNurbsCurve fnCurve;
-  MObject curveDag = fnCurve.createWithEditPoints(m_eps, 3, MFnNurbsCurve::kOpen, false, false, true);
+  MObject curveDag = fnCurve.createWithEditPoints(m_eps, 3, MFnNurbsCurve::kOpen, false, false, false);
 
-  std::cout << "// DEBUG: DrawCurveOnGeoToolCommand - m_rebuildMode: " << m_rebuildMode;
-  std::cout << "\n// DEBUG: DrawCurveOnGeoToolCommand - m_rebuildValue: " << m_rebuildValue << std::endl;
   switch(m_rebuildMode)
   {
     case 1: // to a fixed number of CVs
@@ -67,14 +69,24 @@ void DrawCurveOnGeoToolCommand::rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
                                                     MObject& curveDag,
                                                     unsigned int spans)
 {
-  MObject curveRebuiltData = fnCurve.rebuild(spans); // 3: degree of curve
+  // 3: degree of curve, 0: parametrize between 0.0-1.0
+  MObject curveRebuiltData = fnCurve.rebuild(spans, 3, 0);
 
   MFnNurbsCurve fnCurveRebuilt(curveRebuiltData);
   MPointArray cvsRebuilt;
   fnCurveRebuilt.getCVs(cvsRebuilt);
   MDoubleArray knotsRebuilt;
   fnCurveRebuilt.getKnots(knotsRebuilt);
-  MObject curveRebuiltShape = fnCurve.create(cvsRebuilt, knotsRebuilt, 3,
-                                             MFnNurbsCurve::kOpen, false, true,
-                                             curveDag);
+  MObject curveRebuilt = fnCurve.create(cvsRebuilt, knotsRebuilt, 3,
+                                        MFnNurbsCurve::kOpen, false, true,
+                                        curveDag);
+
+  // Delete "current" shape and rename "rebuilt" shape with "current" shape
+  // name. Not sure there's another way to do "in-place" rebuild via the api.
+  MObject curve = MDagPath(curveDag).node();
+  MString curveName = MFnDependencyNode(curve).name();
+  MGlobal::deleteNode(curve);
+
+  MFnDependencyNode curveRebuiltNode(curveRebuilt);
+  curveRebuiltNode.setName(curveName);
 }

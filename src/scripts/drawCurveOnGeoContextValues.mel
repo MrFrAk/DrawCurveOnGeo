@@ -1,0 +1,49 @@
+// This code is under LGPL-2.1 license.
+// https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html
+//
+// Author: Francois Coulon
+//
+
+/* drawCurveOnGeo plugin mel script to set tool properties dockable UI initial
+  values.
+*/
+
+
+proc string[] drawCurveOnGeoContext_getOptionVarValues()
+{
+    string $optionVarName = "drawCurveOnGeoContext_toolPropertiesValues";
+    string $values[];
+
+    return $values;
+}
+
+
+proc drawCurveOnGeoSetOptions(string $contextName)
+{
+    string $values[] = drawCurveOnGeoContext_getOptionVarValues();
+    optionMenuGrp -e -select ((`drawCurveOnGeoContext -q -rebuildMode $contextName`) + 1) "optionMenuGrp_drawCurveOnGeo_rebuildMode";
+    intSliderGrp -e -value (`drawCurveOnGeoContext -q -rebuildValue $contextName`) "intSliderGrp_drawCurveOnGeo_rebuildValue";
+}
+
+
+global proc drawCurveOnGeoContextValues(string $contextName)
+{
+    // Tool Properties Basics
+    text -e -label "Graffiti" (`toolPropertyWindow -q -field`);
+    button -e -enable true -command ("drawCurveOnGeoContext_resetTool(\"" + $contextName + "\");") (`toolPropertyWindow -q -resetButton`);
+    button -e -enable false -command ("showHelp " + $contextName) (`toolPropertyWindow -q -helpButton`);
+
+    setParent (`toolPropertyWindow -q -location` + "|drawCurveOnGeoContextMainLayout");
+    drawCurveOnGeoSetOptions($contextName);
+    toolPropertySelect("drawCurveOnGeoContextMainLayout");
+    columnLayout -e -width 440 "drawCurveOnGeoContextMainLayout";
+}
+
+
+global proc drawCurveOnGeoContext_resetTool(string $contextName)
+{
+    optionMenuGrp -e -select 1 "optionMenuGrp_drawCurveOnGeo_rebuildMode";
+    drawCurveOnGeoContext -e -rebuildMode 1 $contextName;
+    intSliderGrp -e -value 4 "intSliderGrp_drawCurveOnGeo_rebuildValue";
+    drawCurveOnGeoContext -e -rebuildValue 4 $contextName;
+}
