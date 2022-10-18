@@ -46,7 +46,10 @@ namespace LivingPuppet
                       MHWRender::MUIDrawManager& drawManager,
                       const MHWRender::MFrameContext& context) override { return doRelease(event); }
 
+    unsigned int getRebuildMode() { return m_rebuildMode; }
     void setRebuildMode(short rebuildMode) { m_rebuildMode = rebuildMode; }
+
+    unsigned int getRebuildValue() { return m_rebuildValue; }
     void setRebuildValue(unsigned int rebuildValue) { m_rebuildValue = rebuildValue; }
 
   private:
@@ -68,7 +71,7 @@ namespace LivingPuppet
     MPointArray m_2dPoints;
     MDagPath m_targetDagPath;
 
-    short m_rebuildMode{0};
+    unsigned int m_rebuildMode{0};
     unsigned int m_rebuildValue{4};
   };
 

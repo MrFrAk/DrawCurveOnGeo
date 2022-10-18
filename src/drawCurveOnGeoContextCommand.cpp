@@ -34,6 +34,20 @@ MStatus DrawCurveOnGeoContextCommand::appendSyntax()
 }
 
 
+MStatus DrawCurveOnGeoContextCommand::doQueryFlags()
+{
+  MArgParser argData = parser();
+
+  if (argData.isFlagSet(kRebuildModeFlag))
+    setResult(static_cast<int>(m_context->getRebuildMode()));
+
+  if (argData.isFlagSet(kRebuildValueFlag))
+    setResult(static_cast<int>(m_context->getRebuildValue()));
+
+  return MStatus::kSuccess;
+}
+
+
 MStatus DrawCurveOnGeoContextCommand::doEditFlags()
 {
   MArgParser argData = parser();
@@ -42,7 +56,7 @@ MStatus DrawCurveOnGeoContextCommand::doEditFlags()
   {
     unsigned int iValue;
     argData.getFlagArgument(kRebuildModeFlag, 0, iValue);
-    m_context->setRebuildMode(static_cast<short>(iValue));
+    m_context->setRebuildMode(iValue);
   }
 
   if (argData.isFlagSet(kRebuildValueFlag))

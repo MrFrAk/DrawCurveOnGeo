@@ -203,7 +203,7 @@ MPointArray DrawCurveOnGeoContext::project2dPointsOnMesh()
     // note: We could use closestIntersection but that would mean we'd have to
     // do a bit of setup to build an MMeshIsectAccelParams structure and really
     // take advantage of the function...
-    if (fnMesh.intersect(source, ray, intersectingPoints, 1e-6, MSpace::kWorld))
+    if (fnMesh.intersect(source, ray, intersectingPoints, 1e-5, MSpace::kWorld))
       points.append(intersectingPoints[0]); // storing the closest point only
   }
   return points;

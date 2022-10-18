@@ -24,6 +24,7 @@ namespace LivingPuppet
     MPxContext* makeObj() override;
 
     virtual MStatus appendSyntax();
+    virtual MStatus doQueryFlags();
     virtual MStatus doEditFlags();
 
   protected:
