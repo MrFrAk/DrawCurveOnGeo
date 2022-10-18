@@ -40,7 +40,11 @@ MStatus DrawCurveOnGeoToolCommand::redoIt()
         status = rebuildCurveInPlace(fnCurve, curveDag, numberOfSpans);
       }
       break;
-    default:
+    default: // just set the parameter range to [0.0 - 1.0]
+      {
+        unsigned int numberOfSpans = static_cast<unsigned int>(fnCurve.numSpans());
+        status = rebuildCurveInPlace(fnCurve, curveDag, numberOfSpans, true);
+      }
       break;
   }
   return status;
@@ -58,25 +62,28 @@ MStatus DrawCurveOnGeoToolCommand::finalize()
 // Command is finished, construct a string for journaling.
 {
   MArgList command;
+  command.addArg(MString("Created"));
   command.addArg(m_thisDagPath.partialPathName());
-  command.addArg(MString("cubic curve created with"));
+  command.addArg(MString("cubic nurbsCurve with"));
   command.addArg(MFnNurbsCurve(m_thisDagPath).numCVs());
-  command.addArg(MString("cvs."));
+  command.addArg(MString("CVs."));
   return MPxToolCommand::doFinalize(command);
 }
 
 
 MStatus DrawCurveOnGeoToolCommand::rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
                                                        MObject& curveDag,
-                                                       unsigned int spans)
+                                                       unsigned int spans,
+                                                       bool keepControlPoints)
 {
   // At this point we only have one shape. Let's grab it to delete it later as
   // we'll have a new rebuilt one.
   m_thisDagPath.extendToShape();
   MObject curve = m_thisDagPath.node();
 
-  // 3: degree of curve, 0: parametrize between 0.0-1.0
-  MObject curveRebuiltData = fnCurve.rebuild(spans, 3, 0);
+  MObject curveRebuiltData = keepControlPoints?
+                             fnCurve.rebuild(spans, 3, 0, 0, true, true, true):
+                             fnCurve.rebuild(spans, 3, 0);
 
   MFnNurbsCurve fnCurveRebuilt(curveRebuiltData);
   MPointArray cvsRebuilt;
@@ -87,7 +94,6 @@ MStatus DrawCurveOnGeoToolCommand::rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
                                         MFnNurbsCurve::kOpen, false, true,
                                         curveDag);
 
-  // Cosmetics: deletion of original curve and renaming rebuilt one.
   MString curveName = MFnDependencyNode(curve).name();
   MGlobal::deleteNode(curve);
 

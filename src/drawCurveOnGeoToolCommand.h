@@ -47,7 +47,8 @@ namespace LivingPuppet
   private:
     MStatus rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
                                 MObject& curveDag,
-                                unsigned int spans);
+                                unsigned int spans,
+                                bool keepControlPoints=false);
 
     MPointArray m_eps;
     short m_rebuildMode{0};
