@@ -45,9 +45,9 @@ namespace LivingPuppet
     void setRebuildValue(unsigned int rebuildValue) { m_rebuildValue = rebuildValue; }
 
   private:
-    void rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
-                             MObject& curveDag,
-                             unsigned int spans);
+    MStatus rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
+                                MObject& curveDag,
+                                unsigned int spans);
 
     MPointArray m_eps;
     short m_rebuildMode{0};

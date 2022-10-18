@@ -26,24 +26,24 @@ MStatus DrawCurveOnGeoToolCommand::redoIt()
 //  This method creates the curve from the edit points
 {
   MFnNurbsCurve fnCurve;
-  MObject curveDag = fnCurve.createWithEditPoints(m_eps, 3, MFnNurbsCurve::kOpen, false, false, false);
-
+  MObject curveDag = fnCurve.createWithEditPoints(m_eps, 3, MFnNurbsCurve::kOpen, false, false, true);
+  MStatus status = fnCurve.getPath(m_thisDagPath);
   switch(m_rebuildMode)
   {
     case 1: // to a fixed number of CVs
-      rebuildCurveInPlace(fnCurve, curveDag, (m_rebuildValue - 3)); // 3: curve's degree
+      status = rebuildCurveInPlace(fnCurve, curveDag, (m_rebuildValue - 3)); // 3: curve's degree
       break;
     case 2: // to a fraction of the number of CVs
       {
         unsigned int numberOfCVs = static_cast<unsigned int>(fnCurve.numCVs()) / m_rebuildValue;
         unsigned int numberOfSpans = (numberOfCVs > 4)? (numberOfCVs - 3): 1;
-        rebuildCurveInPlace(fnCurve, curveDag, numberOfSpans);
+        status = rebuildCurveInPlace(fnCurve, curveDag, numberOfSpans);
       }
       break;
     default:
       break;
   }
-  return fnCurve.getPath(m_thisDagPath);
+  return status;
 }
 
 
@@ -58,17 +58,23 @@ MStatus DrawCurveOnGeoToolCommand::finalize()
 // Command is finished, construct a string for journaling.
 {
   MArgList command;
-  command.addArg(MString("Create degree 3 nurbsCurve with"));
+  command.addArg(m_thisDagPath.partialPathName());
+  command.addArg(MString("cubic curve created with"));
   command.addArg(MFnNurbsCurve(m_thisDagPath).numCVs());
   command.addArg(MString("cvs."));
   return MPxToolCommand::doFinalize(command);
 }
 
 
-void DrawCurveOnGeoToolCommand::rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
-                                                    MObject& curveDag,
-                                                    unsigned int spans)
+MStatus DrawCurveOnGeoToolCommand::rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
+                                                       MObject& curveDag,
+                                                       unsigned int spans)
 {
+  // At this point we only have one shape. Let's grab it to delete it later as
+  // we'll have a new rebuilt one.
+  m_thisDagPath.extendToShape();
+  MObject curve = m_thisDagPath.node();
+
   // 3: degree of curve, 0: parametrize between 0.0-1.0
   MObject curveRebuiltData = fnCurve.rebuild(spans, 3, 0);
 
@@ -81,12 +87,11 @@ void DrawCurveOnGeoToolCommand::rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
                                         MFnNurbsCurve::kOpen, false, true,
                                         curveDag);
 
-  // Delete "current" shape and rename "rebuilt" shape with "current" shape
-  // name. Not sure there's another way to do "in-place" rebuild via the api.
-  MObject curve = MDagPath(curveDag).node();
+  // Cosmetics: deletion of original curve and renaming rebuilt one.
   MString curveName = MFnDependencyNode(curve).name();
   MGlobal::deleteNode(curve);
 
   MFnDependencyNode curveRebuiltNode(curveRebuilt);
   curveRebuiltNode.setName(curveName);
+  return fnCurve.getPath(m_thisDagPath); // getting the rebuilt dagPath
 }
