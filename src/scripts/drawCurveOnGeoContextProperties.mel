@@ -18,7 +18,7 @@ global proc drawCurveOnGeoContextProperties()
 
   string $rebuildMode_widget = `optionMenuGrp -parent $mainLayout
                                               -label "Rebuild Mode"
-                                              -changeCommand "drawCurveOnGeoContext_setRebuildMode #1"
+                                              -changeCommand "drawCurveOnGeoContext_setRebuildMode()"
                                               "optionMenuGrp_drawCurveOnGeo_rebuildMode"`;
   // items declared after optionMenuGrp call are directly parented to it
   menuItem "Off"; // 1
@@ -33,12 +33,13 @@ global proc drawCurveOnGeoContextProperties()
 }
 
 
-global proc drawCurveOnGeoContext_setRebuildMode(int $value)
+global proc drawCurveOnGeoContext_setRebuildMode()
 {
   string $contextName = currentCtx();
-  int $value_0Based = $value - 1;
-  drawCurveOnGeoContext -e -rebuildMode $value_0Based $contextName;
-  optionVar -intValue "optionVar_drawCurveOnGeo_rebuildMode" $value_0Based;
+
+  int $value = `optionMenuGrp -q -select "optionMenuGrp_drawCurveOnGeo_rebuildMode"`;
+  drawCurveOnGeoContext -e -rebuildMode ($value - 1) $contextName;
+  optionVar -intValue "optionVar_drawCurveOnGeo_rebuildMode" $value;
 
   string $widget = "intSliderGrp_drawCurveOnGeo_rebuildValue";
   int $minValue = ($value == 3)? 2: 4;

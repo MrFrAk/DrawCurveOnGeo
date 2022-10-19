@@ -13,11 +13,13 @@ proc drawCurveOnGeoSetOptions(string $contextName)
 {
     // menu items index start at 1
     int $value = `optionVar -exists "optionVar_drawCurveOnGeo_rebuildMode"`?
-                 `optionVar -q "optionVar_drawCurveOnGeo_rebuildMode"`: 0;
+                 `optionVar -q "optionVar_drawCurveOnGeo_rebuildMode"`:
+                 `drawCurveOnGeoContext -q -rebuildMode $contextName`;
     optionMenuGrp -e -select $value "optionMenuGrp_drawCurveOnGeo_rebuildMode";
 
     $value = `optionVar -exists "optionVar_drawCurveOnGeo_rebuildValue"`?
-             `optionVar -q "optionVar_drawCurveOnGeo_rebuildValue"`: 4;
+             `optionVar -q "optionVar_drawCurveOnGeo_rebuildValue"`:
+             `drawCurveOnGeoContext -q -rebuildValue $contextName`;
     intSliderGrp -e -value $value "intSliderGrp_drawCurveOnGeo_rebuildValue";
 }
 
