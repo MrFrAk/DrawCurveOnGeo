@@ -5,34 +5,34 @@
 //
 
 
+global proc drawCurveOnGeoContextProperties()
+{
+  string $mainLayout = "drawCurveOnGeoContextMainLayout";
+  if (`control -exists $mainLayout`)
+    return;
+
+  setUITemplate -pushTemplate OptionsTemplate;
+
+  setParent(`toolPropertyWindow -q -location`);
+  columnLayout $mainLayout;
+
+  string $rebuildMode_widget = `optionMenuGrp -parent $mainLayout
+                                              -label "Rebuild Mode"
+                                              -changeCommand "drawCurveOnGeoContext_setRebuildValueMinBound #1"
+                                              "optionMenuGrp_drawCurveOnGeo_rebuildMode"`;
+    menuItem "Off";
+    menuItem "Fixed";
+    menuItem "Fraction";
+
+  intSliderGrp -parent $mainLayout -label "Rebuild Value" "intSliderGrp_drawCurveOnGeo_rebuildValue";
+
+  setUITemplate -popTemplate;
+}
+
+
 global proc drawCurveOnGeoContext_setRebuildValueMinBound(int $menuValue)
 {
   // $menuValue: 1 -> "Off", 2 -> "Fixed", 3 -> "Fraction"
   int $minValue = ($menuValue == 2)? 4: 2;
   intSliderGrp -e -minValue $minValue "intSliderGrp_drawCurveOnGeo_rebuildValue";
-}
-
-
-global proc drawCurveOnGeoContextProperties()
-{
-  string $toolMainLayout = "drawCurveOnGeoContextMainLayout";
-  if (`control -exists $toolMainLayout`)
-    return;
-
-  setUITemplate -pushTemplate OptionsTemplate;
-    setParent (`toolPropertyWindow -q -location`);
-    columnLayout $toolMainLayout;
-
-    string $rebuildMode_widget = `optionMenuGrp -parent $toolMainLayout
-                                                -label "Rebuild Mode"
-                                                -changeCommand "drawCurveOnGeoContext_setRebuildValueMinBound #1"
-                                                "optionMenuGrp_drawCurveOnGeo_rebuildMode"`;
-    menuItem -parent $rebuildMode_widget "Off";
-    menuItem -parent $rebuildMode_widget "Fixed";
-    menuItem -parent $rebuildMode_widget "Fraction";
-
-    intSliderGrp -parent $toolMainLayout -label "Rebuild Value"
-                 "intSliderGrp_drawCurveOnGeo_rebuildValue";
-
-  setUITemplate -popTemplate;
 }

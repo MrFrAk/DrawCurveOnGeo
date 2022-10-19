@@ -20,9 +20,14 @@ proc string[] drawCurveOnGeoContext_getOptionVarValues()
 
 proc drawCurveOnGeoSetOptions(string $contextName)
 {
-    string $values[] = drawCurveOnGeoContext_getOptionVarValues();
-    optionMenuGrp -e -select ((`drawCurveOnGeoContext -q -rebuildMode $contextName`) + 1) "optionMenuGrp_drawCurveOnGeo_rebuildMode";
-    intSliderGrp -e -value (`drawCurveOnGeoContext -q -rebuildValue $contextName`) "intSliderGrp_drawCurveOnGeo_rebuildValue";
+    // string $values[] = drawCurveOnGeoContext_getOptionVarValues();
+
+    // menu items index start at 1
+    int $value = `drawCurveOnGeoContext -q -rebuildMode $contextName` + 1;
+    optionMenuGrp -e -select $value "optionMenuGrp_drawCurveOnGeo_rebuildMode";
+
+    $value = `drawCurveOnGeoContext -q -rebuildValue $contextName`;
+    intSliderGrp -e -value $value "intSliderGrp_drawCurveOnGeo_rebuildValue";
 }
 
 
@@ -30,13 +35,14 @@ global proc drawCurveOnGeoContextValues(string $contextName)
 {
     // Tool Properties Basics
     text -e -label "Graffiti" (`toolPropertyWindow -q -field`);
-    button -e -enable true -command ("drawCurveOnGeoContext_resetTool(\"" + $contextName + "\");") (`toolPropertyWindow -q -resetButton`);
-    button -e -enable false -command ("showHelp " + $contextName) (`toolPropertyWindow -q -helpButton`);
+    // button -e -enable true -command ("drawCurveOnGeoContext_resetTool(\"" + $contextName + "\");") (`toolPropertyWindow -q -resetButton`);
+    // button -e -enable false -command ("showHelp " + $contextName) (`toolPropertyWindow -q -helpButton`);
+    string $mainLayout = "drawCurveOnGeoContextMainLayout";
 
-    setParent (`toolPropertyWindow -q -location` + "|drawCurveOnGeoContextMainLayout");
+    setParent((`toolPropertyWindow -q -location`) + "|" + $mainLayout);
     drawCurveOnGeoSetOptions($contextName);
-    toolPropertySelect("drawCurveOnGeoContextMainLayout");
-    columnLayout -e -width 440 "drawCurveOnGeoContextMainLayout";
+    toolPropertySelect($mainLayout);
+    // columnLayout -e -width 440 $mainLayout;
 }
 
 

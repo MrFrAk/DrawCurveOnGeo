@@ -62,11 +62,7 @@ MStatus DrawCurveOnGeoToolCommand::finalize()
 // Command is finished, construct a string for journaling.
 {
   MArgList command;
-  command.addArg(MString("Created"));
-  command.addArg(m_thisDagPath.partialPathName());
-  command.addArg(MString("cubic nurbsCurve with"));
-  command.addArg(MFnNurbsCurve(m_thisDagPath).numCVs());
-  command.addArg(MString("CVs."));
+  command.addArg(commandString());
   return MPxToolCommand::doFinalize(command);
 }
 
