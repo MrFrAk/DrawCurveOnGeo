@@ -41,19 +41,16 @@ namespace LivingPuppet
     MStatus finalize() override;
 
     void setEPs(MPointArray& eps) { m_eps = eps; }
-    void setRebuildMode(short rebuildMode) { m_rebuildMode = rebuildMode; }
-    void setRebuildValue(unsigned int rebuildValue) { m_rebuildValue = rebuildValue; }
+    void setSpans(int spans) { m_spans = spans; }
+    void setKeepControlPoints(bool keepControlPoints) { m_keepControlPoints = keepControlPoints; }
 
   private:
     MStatus rebuildCurveInPlace(MFnNurbsCurve& fnCurve,
-                                MObject& curveDag,
-                                unsigned int spans,
-                                bool keepControlPoints=false);
+                                MObject& curveDag);
 
     MPointArray m_eps;
-    short m_rebuildMode{0};
-    unsigned int m_rebuildValue{4};
-
+    int m_spans {1};
+    bool m_keepControlPoints{false};
     MDagPath m_thisDagPath;
   };
 

@@ -94,13 +94,35 @@ MStatus DrawCurveOnGeoContext::doRelease(MEvent& event)
   m_2dPoints.append(MPoint(static_cast<double>(x), static_cast<double>(y), 0.0));
 
   MPointArray editPoints = project2dPointsOnMesh();
+  unsigned int numEditPoints = editPoints.length();
   // We need at least 2 points to have hit the target to create a curve
-  if (editPoints.length() > 1)
+  if (numEditPoints > 1)
   {
     DrawCurveOnGeoToolCommand* cmd = (DrawCurveOnGeoToolCommand*)newToolCommand();
     cmd->setEPs(editPoints);
-    cmd->setRebuildMode(m_rebuildMode);
-    cmd->setRebuildValue(m_rebuildValue);
+    switch(m_rebuildMode)
+    {
+      case 1: // to a fixed number of CVs
+        cmd->setSpans((m_rebuildValue - 3)); // here m_rebuildValue == numCVs
+        cmd->setKeepControlPoints(false);
+        break;
+      case 2: // to a fraction of the number of CVs
+        {
+          unsigned int numCVs = (numEditPoints + 2) / m_rebuildValue;
+          unsigned int numSpans = (numCVs > 4)? (numCVs - 3): 1;
+          cmd->setSpans(static_cast<int>(numSpans));
+          cmd->setKeepControlPoints(false);
+        }
+        break;
+      default: // just set the parameter range to [0.0 - 1.0]
+        {
+          unsigned int numCVs = (numEditPoints + 2) / m_rebuildValue;
+          unsigned int numSpans = (numCVs > 4)? (numCVs - 3): 1;
+          cmd->setSpans(static_cast<int>(numSpans));
+          cmd->setKeepControlPoints(true);
+        }
+        break;
+    }
     cmd->redoIt();
     cmd->finalize();
     m_3dView.refresh();
