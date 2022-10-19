@@ -18,21 +18,42 @@ global proc drawCurveOnGeoContextProperties()
 
   string $rebuildMode_widget = `optionMenuGrp -parent $mainLayout
                                               -label "Rebuild Mode"
-                                              -changeCommand "drawCurveOnGeoContext_setRebuildValueMinBound #1"
+                                              -changeCommand "drawCurveOnGeoContext_setRebuildMode #1"
                                               "optionMenuGrp_drawCurveOnGeo_rebuildMode"`;
-    menuItem "Off";
-    menuItem "Fixed";
-    menuItem "Fraction";
+  // items declared after optionMenuGrp call are directly parented to it
+  menuItem "Off"; // 1
+  menuItem "Fixed"; // 2
+  menuItem "Fraction"; // 3
 
-  intSliderGrp -parent $mainLayout -label "Rebuild Value" "intSliderGrp_drawCurveOnGeo_rebuildValue";
+  intSliderGrp -parent $mainLayout -label "Rebuild Value"
+               -changeCommand "drawCurveOnGeoContext_setRebuildValue #1"
+               "intSliderGrp_drawCurveOnGeo_rebuildValue";
 
   setUITemplate -popTemplate;
 }
 
 
-global proc drawCurveOnGeoContext_setRebuildValueMinBound(int $menuValue)
+global proc drawCurveOnGeoContext_setRebuildMode(int $value)
 {
-  // $menuValue: 1 -> "Off", 2 -> "Fixed", 3 -> "Fraction"
-  int $minValue = ($menuValue == 2)? 4: 2;
-  intSliderGrp -e -minValue $minValue "intSliderGrp_drawCurveOnGeo_rebuildValue";
+  string $contextName = currentCtx();
+  int $value_0Based = $value - 1;
+  drawCurveOnGeoContext -e -rebuildMode $value_0Based $contextName;
+  optionVar -intValue "optionVar_drawCurveOnGeo_rebuildMode" $value_0Based;
+
+  string $widget = "intSliderGrp_drawCurveOnGeo_rebuildValue";
+  int $minValue = ($value == 3)? 2: 4;
+  intSliderGrp -e -minValue $minValue $widget;
+  if ((`intSliderGrp -q -value $widget`) < $minValue)
+  {
+      intSliderGrp -e -value $minValue $widget;
+      drawCurveOnGeoContext -e -rebuildValue $minValue $contextName;
+      optionVar -intValue "optionVar_drawCurveOnGeo_rebuildValue" $value;
+  }
+}
+
+
+global proc drawCurveOnGeoContext_setRebuildValue(int $value)
+{
+  drawCurveOnGeoContext -e -rebuildValue $value `currentCtx`;
+  optionVar -intValue "optionVar_drawCurveOnGeo_rebuildValue" $value;
 }

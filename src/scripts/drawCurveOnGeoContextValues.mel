@@ -9,24 +9,15 @@
 */
 
 
-proc string[] drawCurveOnGeoContext_getOptionVarValues()
-{
-    string $optionVarName = "drawCurveOnGeoContext_toolPropertiesValues";
-    string $values[];
-
-    return $values;
-}
-
-
 proc drawCurveOnGeoSetOptions(string $contextName)
 {
-    // string $values[] = drawCurveOnGeoContext_getOptionVarValues();
-
     // menu items index start at 1
-    int $value = `drawCurveOnGeoContext -q -rebuildMode $contextName` + 1;
+    int $value = `optionVar -exists "optionVar_drawCurveOnGeo_rebuildMode"`?
+                 `optionVar -q "optionVar_drawCurveOnGeo_rebuildMode"`: 0;
     optionMenuGrp -e -select $value "optionMenuGrp_drawCurveOnGeo_rebuildMode";
 
-    $value = `drawCurveOnGeoContext -q -rebuildValue $contextName`;
+    $value = `optionVar -exists "optionVar_drawCurveOnGeo_rebuildValue"`?
+             `optionVar -q "optionVar_drawCurveOnGeo_rebuildValue"`: 4;
     intSliderGrp -e -value $value "intSliderGrp_drawCurveOnGeo_rebuildValue";
 }
 
@@ -35,14 +26,13 @@ global proc drawCurveOnGeoContextValues(string $contextName)
 {
     // Tool Properties Basics
     text -e -label "Graffiti" (`toolPropertyWindow -q -field`);
-    // button -e -enable true -command ("drawCurveOnGeoContext_resetTool(\"" + $contextName + "\");") (`toolPropertyWindow -q -resetButton`);
-    // button -e -enable false -command ("showHelp " + $contextName) (`toolPropertyWindow -q -helpButton`);
+    button -e -enable true -command ("drawCurveOnGeoContext_resetTool(\"" + $contextName + "\");") (`toolPropertyWindow -q -resetButton`);
+    button -e -enable false -command ("showHelp " + $contextName) (`toolPropertyWindow -q -helpButton`);
     string $mainLayout = "drawCurveOnGeoContextMainLayout";
 
     setParent((`toolPropertyWindow -q -location`) + "|" + $mainLayout);
     drawCurveOnGeoSetOptions($contextName);
     toolPropertySelect($mainLayout);
-    // columnLayout -e -width 440 $mainLayout;
 }
 
 

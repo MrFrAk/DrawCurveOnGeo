@@ -18,7 +18,7 @@ using namespace LivingPuppet;
 
 DrawCurveOnGeoToolCommand::DrawCurveOnGeoToolCommand()
 {
-  setCommandString("drawCurveOnGeoToolCmd");
+  setCommandString("drawCurveOnGeoTool");
 }
 
 
