@@ -29,6 +29,10 @@ namespace LivingPuppet
     DrawCurveOnGeoContext();
     virtual ~DrawCurveOnGeoContext() { reset(); }
     void* creator() { return new DrawCurveOnGeoContext; }
+    // The following is mandatory so Properties and Values mel functions can be
+    // executed when the Tool Settings UI is brought up. Base name must match.
+    void getClassName(MString& name) const { name.set("drawCurveOnGeoContext"); }
+
     void toolOnSetup(MEvent& event) override {}
 
     MStatus doPress(MEvent& event) override;
