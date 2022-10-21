@@ -4,14 +4,15 @@
 // Author: Francois Coulon
 //
 
+#include "drawCurveOnGeoContext.h"
+#include "drawCurveOnGeoToolCommand.h"
+
 #include <maya/MCursor.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFnNurbsCurve.h>
 #include <maya/MGlobal.h>
 #include <maya/MItSelectionList.h>
 #include <maya/MSelectionList.h>
-
-#include "drawCurveOnGeoContext.h"
 
 using namespace LivingPuppet;
 
@@ -46,7 +47,6 @@ MStatus DrawCurveOnGeoContext::doPress(MEvent& event)
   short x;
   short y;
   event.getPosition(x, y);
-  m_2dPoints.clear();
   m_2dPoints.append(MPoint(static_cast<double>(x), static_cast<double>(y), 0.0));
 
   return MStatus::kSuccess;
@@ -68,6 +68,7 @@ MStatus DrawCurveOnGeoContext::doDrag(MEvent& event)
 
   return MStatus::kSuccess;
 }
+
 
 // Viewport 2.0
 MStatus DrawCurveOnGeoContext::doDrag(MEvent& event,
@@ -93,13 +94,40 @@ MStatus DrawCurveOnGeoContext::doRelease(MEvent& event)
   m_2dPoints.append(MPoint(static_cast<double>(x), static_cast<double>(y), 0.0));
 
   MPointArray editPoints = project2dPointsOnMesh();
+  unsigned int numEditPoints = editPoints.length();
   // We need at least 2 points to have hit the target to create a curve
-  if (editPoints.length() > 1)
+  if (numEditPoints > 1)
   {
-    MFnNurbsCurve fnCurve;
-    fnCurve.createWithEditPoints(editPoints, 3, MFnNurbsCurve::kOpen, false, false, true);
-    // m_3dView.refresh();
+    DrawCurveOnGeoToolCommand* cmd = (DrawCurveOnGeoToolCommand*)newToolCommand();
+    cmd->setEPs(editPoints);
+    switch(m_rebuildMode)
+    {
+      case 1: // to a fixed number of CVs
+        cmd->setSpans((m_rebuildValue - 3)); // here m_rebuildValue == numCVs
+        cmd->setKeepControlPoints(false);
+        break;
+      case 2: // to a fraction of the number of CVs
+        {
+          unsigned int numCVs = (numEditPoints + 2) / m_rebuildValue;
+          unsigned int numSpans = (numCVs > 4)? (numCVs - 3): 1;
+          cmd->setSpans(static_cast<int>(numSpans));
+          cmd->setKeepControlPoints(false);
+        }
+        break;
+      default: // just set the parameter range to [0.0 - 1.0]
+        {
+          unsigned int numCVs = (numEditPoints + 2) / m_rebuildValue;
+          unsigned int numSpans = (numCVs > 4)? (numCVs - 3): 1;
+          cmd->setSpans(static_cast<int>(numSpans));
+          cmd->setKeepControlPoints(true);
+        }
+        break;
+    }
+    cmd->redoIt();
+    cmd->finalize();
+    m_3dView.refresh();
   }
+  m_2dPoints.clear();
   return MStatus::kSuccess;
 }
 
@@ -108,11 +136,6 @@ MStatus DrawCurveOnGeoContext::doRelease(MEvent& event)
 
 void DrawCurveOnGeoContext::reset()
 {
-  m_viewportX = 0;
-  m_viewportY = 0;
-  m_viewportWidth = 0;
-  m_viewportHeight = 0;
-
   m_2dPoints.clear();
   m_targetDagPath = MDagPath();
 }
@@ -202,7 +225,7 @@ MPointArray DrawCurveOnGeoContext::project2dPointsOnMesh()
     // note: We could use closestIntersection but that would mean we'd have to
     // do a bit of setup to build an MMeshIsectAccelParams structure and really
     // take advantage of the function...
-    if (fnMesh.intersect(source, ray, intersectingPoints, 1e-6, MSpace::kWorld))
+    if (fnMesh.intersect(source, ray, intersectingPoints, 1e-5, MSpace::kWorld))
       points.append(intersectingPoints[0]); // storing the closest point only
   }
   return points;

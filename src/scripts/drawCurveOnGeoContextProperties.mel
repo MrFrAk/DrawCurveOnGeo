@@ -1,0 +1,60 @@
+// This code is under LGPL-2.1 license.
+// https://www.gnu.org/licenses/old-licenses/lgpl-2.1-standalone.html
+//
+// Author: Francois Coulon
+//
+
+
+global proc drawCurveOnGeoContextProperties()
+{
+  string $mainLayout = "drawCurveOnGeoContextMainLayout";
+  if (`control -exists $mainLayout`)
+    return;
+
+  setUITemplate -pushTemplate OptionsTemplate;
+
+  setParent(`toolPropertyWindow -q -location`);
+  columnLayout $mainLayout;
+
+  string $rebuildMode_widget = `optionMenuGrp -parent $mainLayout
+                                              -label "Rebuild Mode"
+                                              -changeCommand "drawCurveOnGeoContext_setRebuildMode()"
+                                              "optionMenuGrp_drawCurveOnGeo_rebuildMode"`;
+  // items declared after optionMenuGrp call are directly parented to it
+  menuItem "Off"; // 1
+  menuItem "Fixed"; // 2
+  menuItem "Fraction"; // 3
+
+  intSliderGrp -parent $mainLayout -label "Rebuild Value"
+               -changeCommand "drawCurveOnGeoContext_setRebuildValue #1"
+               "intSliderGrp_drawCurveOnGeo_rebuildValue";
+
+  setUITemplate -popTemplate;
+}
+
+
+global proc drawCurveOnGeoContext_setRebuildMode()
+{
+  string $contextName = currentCtx();
+
+  int $value = `optionMenuGrp -q -select "optionMenuGrp_drawCurveOnGeo_rebuildMode"`;
+  drawCurveOnGeoContext -e -rebuildMode ($value - 1) $contextName;
+  optionVar -intValue "optionVar_drawCurveOnGeo_rebuildMode" $value;
+
+  string $widget = "intSliderGrp_drawCurveOnGeo_rebuildValue";
+  int $minValue = ($value == 3)? 2: 4;
+  intSliderGrp -e -minValue $minValue $widget;
+  if ((`intSliderGrp -q -value $widget`) < $minValue)
+  {
+      intSliderGrp -e -value $minValue $widget;
+      drawCurveOnGeoContext -e -rebuildValue $minValue $contextName;
+      optionVar -intValue "optionVar_drawCurveOnGeo_rebuildValue" $value;
+  }
+}
+
+
+global proc drawCurveOnGeoContext_setRebuildValue(int $value)
+{
+  drawCurveOnGeoContext -e -rebuildValue $value `currentCtx`;
+  optionVar -intValue "optionVar_drawCurveOnGeo_rebuildValue" $value;
+}

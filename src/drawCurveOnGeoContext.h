@@ -9,6 +9,9 @@ mesh. For more implementation explanations, it is based on the Maya devkit
 lassoTool example.
 */
 
+#ifndef _LP_DRAWCURVEONGEO_CONTEXT_H_
+#define _LP_DRAWCURVEONGEO_CONTEXT_H_
+
 #include <maya/MPxContext.h>
 
 #include <maya/M3dView.h>
@@ -26,6 +29,10 @@ namespace LivingPuppet
     DrawCurveOnGeoContext();
     virtual ~DrawCurveOnGeoContext() { reset(); }
     void* creator() { return new DrawCurveOnGeoContext; }
+    // The following is mandatory so Properties and Values mel functions can be
+    // executed when the Tool Settings UI is brought up. Base name must match.
+    void getClassName(MString& name) const { name.set("drawCurveOnGeoContext"); }
+
     void toolOnSetup(MEvent& event) override {}
 
     MStatus doPress(MEvent& event) override;
@@ -42,6 +49,12 @@ namespace LivingPuppet
     MStatus doRelease(MEvent& event,
                       MHWRender::MUIDrawManager& drawManager,
                       const MHWRender::MFrameContext& context) override { return doRelease(event); }
+
+    unsigned int getRebuildMode() { return m_rebuildMode; }
+    void setRebuildMode(short rebuildMode) { m_rebuildMode = rebuildMode; }
+
+    unsigned int getRebuildValue() { return m_rebuildValue; }
+    void setRebuildValue(unsigned int rebuildValue) { m_rebuildValue = rebuildValue; }
 
   private:
     void reset();
@@ -61,6 +74,11 @@ namespace LivingPuppet
     // takes that as an input so we don't have to cast an entire array there
     MPointArray m_2dPoints;
     MDagPath m_targetDagPath;
+
+    unsigned int m_rebuildMode{0};
+    unsigned int m_rebuildValue{4};
   };
 
 } // namespace LivingPuppet
+
+#endif
