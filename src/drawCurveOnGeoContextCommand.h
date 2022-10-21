@@ -4,6 +4,9 @@
 // Author: Francois Coulon
 //
 
+#ifndef _LP_DRAWCURVEONGEO_CONTEXTCOMMAND_H_
+#define _LP_DRAWCURVEONGEO_CONTEXTCOMMAND_H_
+
 #include <maya/MPxContextCommand.h>
 
 #include "drawCurveOnGeoContext.h"
@@ -20,11 +23,14 @@ namespace LivingPuppet
     static void* creator() { return new DrawCurveOnGeoContextCommand; }
     MPxContext* makeObj() override;
 
-  //   virtual MStatus appendSyntax();
-  //   virtual MStatus doEditFlags();
+    virtual MStatus appendSyntax();
+    virtual MStatus doQueryFlags();
+    virtual MStatus doEditFlags();
 
-  // protected:
-  //   DrawCurveOnGeoContext* m_context;
+  protected:
+    DrawCurveOnGeoContext* m_context;
   };
 
 } // namespace LivingPuppet
+
+#endif
